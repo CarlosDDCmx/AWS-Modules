@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Image Uploader</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+    .upload-container { margin-bottom: 30px; }
+    .preview { margin-top: 20px; }
+    .preview img { max-width: 100%; margin: 10px; border: 1px solid #ddd; }
+    .resized-images { display: flex; flex-wrap: wrap; }
+  </style>
+</head>
+<body>
+  <h1>Serverless Image Processor</h1>
+  
+  <div class="upload-container">
+    <input type="file" id="file-input" accept="image/*">
+    <button id="upload-btn">Upload Image</button>
+    <div id="upload-status"></div>
+  </div>
+
+  <div class="preview">
+    <h2>Original Image</h2>
+    <img id="original-preview" src="" alt="Original preview">
+    
+    <h2>Resized Versions</h2>
+    <div id="resized-container" class="resized-images"></div>
+  </div>
+
+  <script>
+    const API_ENDPOINT = 'https://<your-api-id>.execute-api.<region>.amazonaws.com/prod/upload';
+    const RESIZED_BASE_URL = 'https://resized-images-bucket-<your-name>.s3.<region>.amazonaws.com/resized/';
+    
+    document.getElementById('upload-btn').addEventListener('click', uploadImage);
+    
+    async function uploadImage() {
+      const fileInput = document.getElementById('file-input');
+      const file = fileInput.files[0];
+      
+      if (!file) {
+        alert('Please select an image file');
+        return;
+      }
+      
+      // Generate unique filename
+      const filename = `${Date.now()}-${file.name}`;
+      const uploadUrl = `${API_ENDPOINT}/${filename}`;
+      
+      // Display preview
+      const preview = document.getElementById('original-preview');
+      preview.src = URL.createObjectURL(file);
+      
+      try {
+        // Upload to S3 via API Gateway
+        const response = await fetch(uploadUrl, {
+          method: 'PUT',
+          body: file,
+          headers: { 'Content-Type': file.type }
+        });
+        
+        if (response.ok) {
+          document.getElementById('upload-status').textContent = 
+            'Upload successful! Processing images...';
+          
+          // Check for resized images every 5 seconds
+          const checkInterval = setInterval(() => {
+            checkResizedImages(filename);
+          }, 5000);
+        } else {
+          throw new Error('Upload failed');
+        }
+      } catch (error) {
+        document.getElementById('upload-status').textContent = 
+          `Error: ${error.message}`;
+      }
+    }
+    
+    async function checkResizedImages(filename) {
+      const sizes = [200, 400, 800];
+      const container = document.getElementById('resized-container');
+      container.innerHTML = '';
+      
+      let allExist = true;
+      
+      for (const size of sizes) {
+        const imgUrl = `${RESIZED_BASE_URL}${size}w/${filename}`;
+        
+        // Check if image exists
+        const exists = await checkImageExists(imgUrl);
+        
+        if (exists) {
+          // Display resized image
+          const img = document.createElement('img');
+          img.src = imgUrl;
+          img.alt = `${size}px wide`;
+          container.appendChild(img);
+        } else {
+          allExist = false;
+        }
+      }
+      
+      if (allExist) {
+        document.getElementById('upload-status').textContent = 
+          'All resized versions available!';
+        clearInterval(checkInterval);
+      }
+    }
+    
+    function checkImageExists(url) {
+      return new Promise(resolve => {
+        const img = new Image();
+        img.onload = () => resolve(true);
+        img.onerror = () => resolve(false);
+        img.src = url;
+      });
+    }
+  </script>
+</body>
+</html>
