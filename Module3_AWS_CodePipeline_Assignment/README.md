@@ -191,7 +191,7 @@ aws codepipeline create-pipeline \
 1. Make a change to your GitHub repository:
 ```bash
 git clone https://github.com/carlosDDCmx/AWS-modules.git
-cd <your-repo>
+cd AWS-modules.git
 echo "<p>New feature added!</p>" >> index.html
 git add .
 git commit -m "Add new feature"
