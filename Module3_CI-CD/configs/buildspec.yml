@@ -1,0 +1,24 @@
+version: 1.0
+
+phases:
+  install:
+    runtime-versions:
+      nodejs: 18
+    commands:
+      - echo "Installing dependencies..."
+      - npm install
+
+  build:
+    commands:
+      - echo "Build started on `date`"
+      - export APP_VERSION=$(date +%Y%m%d.%H%M%S)
+      - echo "APP_VERSION=$APP_VERSION" > .env
+
+  post_build:
+    commands:
+      - echo "Build completed on `date`"
+
+artifacts:
+  files:
+    - '**/*'
+  base-directory: .
