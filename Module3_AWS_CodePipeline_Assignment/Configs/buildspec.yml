@@ -1,0 +1,30 @@
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      nodejs: 18
+    commands:
+      - echo "Installing dependencies..."
+      - npm install -g html-validator
+
+  pre_build:
+    commands:
+      - echo "Pre-build validation..."
+      - export BUILD_VERSION=$(date +%Y%m%d.%H%M%S)
+      - echo "Build version: $BUILD_VERSION"
+
+  build:
+    commands:
+      - echo "Building..."
+      - sed -i "s/1.0.0/$BUILD_VERSION/g" index.html
+      - html-validator --file index.html
+
+  post_build:
+    commands:
+      - echo "Build completed successfully"
+
+artifacts:
+  files:
+    - '**/*'
+  base-directory: .
