@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cloud Notes App</title>
+  <style>
+    :root {
+      --primary: #4361ee;
+      --secondary: #3f37c9;
+      --success: #4cc9f0;
+      --danger: #f72585;
+      --light: #f8f9fa;
+      --dark: #212529;
+    }
+    
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    
+    body {
+      background-color: #f0f2f5;
+      color: var(--dark);
+      line-height: 1.6;
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    
+    header {
+      background-color: var(--primary);
+      color: white;
+      padding: 20px 0;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    
+    header h1 {
+      margin: 0;
+      font-size: 2rem;
+    }
+    
+    .header-content {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .btn {
+      display: inline-block;
+      background-color: var(--primary);
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 1rem;
+      text-decoration: none;
+      transition: background-color 0.3s;
+    }
+    
+    .btn:hover {
+      background-color: var(--secondary);
+    }
+    
+    .btn-danger {
+      background-color: var(--danger);
+    }
+    
+    .btn-danger:hover {
+      background-color: #d1145a;
+    }
+    
+    .card {
+      background-color: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+      margin-bottom: 20px;
+      overflow: hidden;
+    }
+    
+    .card-header {
+      padding: 15px 20px;
+      background-color: #f8f9fa;
+      border-bottom: 1px solid #e9ecef;
+    }
+    
+    .card-body {
+      padding: 20px;
+    }
+    
+    .form-group {
+      margin-bottom: 15px;
+    }
+    
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: 600;
+    }
+    
+    input, textarea, select {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ced4da;
+      border-radius: 4px;
+      font-size: 1rem;
+    }
+    
+    textarea {
+      min-height: 150px;
+      resize: vertical;
+    }
+    
+    .notes-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 20px;
+      margin-top: 20px;
+    }
+    
+    .note-card {
+      border: 1px solid #e9ecef;
+      border-radius: 8px;
+      overflow: hidden;
+      transition: transform 0.3s, box-shadow 0.3s;
+    }
+    
+    .note-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+    
+    .note-header {
+      padding: 15px;
+      background-color: #f8f9fa;
+      border-bottom: 1px solid #e9ecef;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .note-title {
+      margin: 0;
+      font-size: 1.25rem;
+      color: var(--primary);
+    }
+    
+    .note-date {
+      color: #6c757d;
+      font-size: 0.85rem;
+    }
+    
+    .note-content {
+      padding: 15px;
+    }
+    
+    .note-actions {
+      padding: 15px;
+      display: flex;
+      gap: 10px;
+      border-top: 1px solid #e9ecef;
+    }
+    
+    .attachment-container {
+      margin-top: 15px;
+      padding-top: 15px;
+      border-top: 1px dashed #e9ecef;
+    }
+    
+    .attachment-link {
+      display: inline-block;
+      padding: 5px 10px;
+      background-color: #e9ecef;
+      border-radius: 4px;
+      text-decoration: none;
+      color: var(--dark);
+      font-size: 0.9rem;
+    }
+    
+    .attachment-link:hover {
+      background-color: #dee2e6;
+    }
+    
+    .loading {
+      text-align: center;
+      padding: 40px;
+      color: #6c757d;
+    }
+    
+    .error {
+      padding: 20px;
+      background-color: #f8d7da;
+      color: #721c24;
+      border-radius: 4px;
+      margin: 20px 0;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container">
+      <div class="header-content">
+        <h1>Cloud Notes App</h1>
+        <button id="create-note-btn" class="btn">Create Note</button>
+      </div>
+    </div>
+  </header>
+  
+  <main class="container">
+    <div id="notes-container">
+      <div class="loading" id="loading-indicator">Loading notes...</div>
+    </div>
+    
+    <div id="create-note-form" class="card" style="display: none;">
+      <div class="card-header">
+        <h2>Create New Note</h2>
+      </div>
+      <div class="card-body">
+        <div class="form-group">
+          <label for="note-title">Title</label>
+          <input type="text" id="note-title" placeholder="Enter note title">
+        </div>
+        <div class="form-group">
+          <label for="note-content">Content</label>
+          <textarea id="note-content" placeholder="Enter note content"></textarea>
+        </div>
+        <div class="form-group">
+          <label for="note-attachment">Attachment (optional)</label>
+          <input type="file" id="note-attachment">
+        </div>
+        <div class="form-group">
+          <button id="submit-note" class="btn">Save Note</button>
+          <button id="cancel-note" class="btn btn-danger">Cancel</button>
+        </div>
+      </div>
+    </div>
+    
+    <div id="note-detail" class="card" style="display: none;">
+      <div class="card-header">
+        <h2 id="detail-title"></h2>
+      </div>
+      <div class="card-body">
+        <p id="detail-date" class="note-date"></p>
+        <div id="detail-content" class="note-content"></div>
+        <div id="detail-attachment" class="attachment-container"></div>
+      </div>
+      <div class="note-actions">
+        <button id="back-to-list" class="btn">Back to List</button>
+        <button id="delete-note" class="btn btn-danger">Delete Note</button>
+      </div>
+    </div>
+  </main>
+  
+  <script>
+    // Configuration
+    const API_ENDPOINT = 'https://<your-api-id>.execute-api.<region>.amazonaws.com/prod';
+    
+    // DOM Elements
+    const notesContainer = document.getElementById('notes-container');
+    const createNoteForm = document.getElementById('create-note-form');
+    const noteDetail = document.getElementById('note-detail');
+    const createNoteBtn = document.getElementById('create-note-btn');
+    const cancelNoteBtn = document.getElementById('cancel-note');
+    const submitNoteBtn = document.getElementById('submit-note');
+    const backToListBtn = document.getElementById('back-to-list');
+    const deleteNoteBtn = document.getElementById('delete-note');
+    const noteTitleInput = document.getElementById('note-title');
+    const noteContentInput = document.getElementById('note-content');
+    const noteAttachmentInput = document.getElementById('note-attachment');
+    const detailTitle = document.getElementById('detail-title');
+    const detailDate = document.getElementById('detail-date');
+    const detailContent = document.getElementById('detail-content');
+    const detailAttachment = document.getElementById('detail-attachment');
+    
+    // State
+    let currentNoteId = null;
+    
+    // Event Listeners
+    createNoteBtn.addEventListener('click', showCreateForm);
+    cancelNoteBtn.addEventListener('click', hideCreateForm);
+    submitNoteBtn.addEventListener('click', createNote);
+    backToListBtn.addEventListener('click', showNotesList);
+    deleteNoteBtn.addEventListener('click', deleteCurrentNote);
+    
+    // Initialize
+    loadNotes();
+    
+    // Functions
+    async function loadNotes() {
+      try {
+        const response = await fetch(`${API_ENDPOINT}/notes`);
+        const notes = await response.json();
+        
+        notesContainer.innerHTML = '';
+        
+        if (notes.length === 0) {
+          notesContainer.innerHTML = '<div class="card"><div class="card-body">No notes found. Create your first note!</div></div>';
+          return;
+        }
+        
+        const grid = document.createElement('div');
+        grid.className = 'notes-grid';
+        
+        notes.forEach(note => {
+          const noteCard = document.createElement('div');
+          noteCard.className = 'note-card';
+          noteCard.innerHTML = `
+            <div class="note-header">
+              <h3 class="note-title">${note.Title}</h3>
+              <span class="note-date">${new Date(note.CreatedAt).toLocaleDateString()}</span>
+            </div>
+            <div class="note-content">
+              <p>${note.Content.substring(0, 100)}${note.Content.length > 100 ? '...' : ''}</p>
+            </div>
+            <div class="note-actions">
+              <button class="btn view-note" data-id="${note.NoteID}">View</button>
+            </div>
+          `;
+          grid.appendChild(noteCard);
+        });
+        
+        notesContainer.appendChild(grid);
+        
+        // Add event listeners to view buttons
+        document.querySelectorAll('.view-note').forEach(button => {
+          button.addEventListener('click', (e) => {
+            const noteId = e.target.getAttribute('data-id');
+            showNoteDetail(noteId);
+          });
+        });
+      } catch (error) {
+        showError('Failed to load notes: ' + error.message);
+      }
+    }
+    
+    function showCreateForm() {
+      createNoteForm.style.display = 'block';
+      notesContainer.style.display = 'none';
+      noteDetail.style.display = 'none';
+      
+      // Reset form
+      noteTitleInput.value = '';
+      noteContentInput.value = '';
+      noteAttachmentInput.value = '';
+    }
+    
+    function hideCreateForm() {
+      createNoteForm.style.display = 'none';
+      notesContainer.style.display = 'block';
+    }
+    
+    async function createNote() {
+      const title = noteTitleInput.value.trim();
+      const content = noteContentInput.value.trim();
+      const fileInput = noteAttachmentInput;
+      
+      if (!title || !content) {
+        alert('Title and content are required');
+        return;
+      }
+      
+      try {
+        let fileData = null;
+        let fileName = null;
+        
+        if (fileInput.files.length > 0) {
+          const file = fileInput.files[0];
+          fileName = file.name;
+          fileData = await toBase64(file);
+        }
+        
+        const response = await fetch(`${API_ENDPOINT}/notes`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            title, 
+            content, 
+            fileName, 
+            fileData: fileData ? fileData.split(',')[1] : null 
+          })
+        });
+        
+        if (response.ok) {
+          hideCreateForm();
+          loadNotes();
+          alert('Note created successfully!');
+        } else {
+          const error = await response.json();
+          throw new Error(error.message || 'Failed to create note');
+        }
+      } catch (error) {
+        showError('Error creating note: ' + error.message);
+      }
+    }
+    
+    async function showNoteDetail(noteId) {
+      try {
+        const response = await fetch(`${API_ENDPOINT}/notes/${noteId}`);
+        
+        if (!response.ok) {
+          throw new Error('Note not found');
+        }
+        
+        const note = await response.json();
+        currentNoteId = noteId;
+        
+        detailTitle.textContent = note.Title;
+        detailDate.textContent = `Created: ${new Date(note.CreatedAt).toLocaleString()}`;
+        detailContent.innerHTML = note.Content.replace(/\n/g, '<br>');
+        
+        // Display attachment if exists
+        detailAttachment.innerHTML = '';
+        if (note.FileURL) {
+          const fileName = note.FileURL.split('/').pop();
+          detailAttachment.innerHTML = `
+            <strong>Attachment:</strong><br>
+            <a href="${note.FileURL}" target="_blank" class="attachment-link">${fileName}</a>
+          `;
+        }
+        
+        noteDetail.style.display = 'block';
+        notesContainer.style.display = 'none';
+        createNoteForm.style.display = 'none';
+      } catch (error) {
+        showError('Error loading note: ' + error.message);
+      }
+    }
+    
+    function showNotesList() {
+      noteDetail.style.display = 'none';
+      notesContainer.style.display = 'block';
+      currentNoteId = null;
+    }
+    
+    async function deleteCurrentNote() {
+      if (!currentNoteId) return;
+      
+      if (!confirm('Are you sure you want to delete this note?')) {
+        return;
+      }
+      
+      try {
+        const response = await fetch(`${API_ENDPOINT}/notes/${currentNoteId}`, {
+          method: 'DELETE'
+        });
+        
+        if (response.ok) {
+          showNotesList();
+          loadNotes();
+          alert('Note deleted successfully!');
+        } else {
+          const error = await response.json();
+          throw new Error(error.message || 'Failed to delete note');
+        }
+      } catch (error) {
+        showError('Error deleting note: ' + error.message);
+      }
+    }
+    
+    function toBase64(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = error => reject(error);
+      });
+    }
+    
+    function showError(message) {
+      const errorDiv = document.createElement('div');
+      errorDiv.className = 'error';
+      errorDiv.textContent = message;
+      
+      // Insert at the top of the container
+      notesContainer.insertBefore(errorDiv, notesContainer.firstChild);
+      
+      // Auto-remove after 5 seconds
+      setTimeout(() => {
+        errorDiv.remove();
+      }, 5000);
+    }
+  </script>
+</body>
+</html>

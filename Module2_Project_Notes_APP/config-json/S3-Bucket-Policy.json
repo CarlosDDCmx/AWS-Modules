@@ -1,0 +1,25 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "AllowLambdaAccess",
+      "Effect": "Allow",
+      "Principal": {
+        "AWS": "arn:aws:iam::<account-id>:role/<lambda-execution-role>"
+      },
+      "Action": [
+        "s3:PutObject",
+        "s3:GetObject",
+        "s3:DeleteObject"
+      ],
+      "Resource": "arn:aws:s3:::notes-app-attachments-<your-unique-name>/*"
+    },
+    {
+      "Sid": "AllowPublicRead",
+      "Effect": "Allow",
+      "Principal": "*",
+      "Action": "s3:GetObject",
+      "Resource": "arn:aws:s3:::notes-app-attachments-<your-unique-name>/attachments/*"
+    }
+  ]
+}
