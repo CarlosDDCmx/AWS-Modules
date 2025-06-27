@@ -1,0 +1,56 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:14-alpine
+    container_name: task-manager-db
+    restart: always
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      # Use this for debugging the DB directly if needed
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+    container_name: task-manager-backend
+    restart: always
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "${BACKEND_PORT}:${BACKEND_PORT}"
+    environment:
+      # Pass all variables from the .env file
+      - DB_HOST=${DB_HOST}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_NAME=${DB_NAME}
+      - DB_PORT=${DB_PORT}
+      - BACKEND_PORT=${BACKEND_PORT}
+    
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        # Pass the API URL to the React build process
+        REACT_APP_API_URL: ${REACT_APP_API_URL}
+    container_name: task-manager-frontend
+    restart: always
+    ports:
+      - "${FRONTEND_PORT}:80" # Map host 3000 to container 80 (Nginx)
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data: {}

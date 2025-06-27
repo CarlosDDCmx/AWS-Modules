@@ -1,0 +1,98 @@
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: #f4f7f6;
+  color: #333;
+  margin: 0;
+  padding: 20px;
+}
+
+.App {
+  max-width: 600px;
+  margin: 40px auto;
+  padding: 30px;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+h1 {
+  color: #2c3e50;
+  text-align: center;
+}
+
+.task-form {
+  display: flex;
+  margin-bottom: 20px;
+}
+
+.task-input {
+  flex-grow: 1;
+  padding: 10px 15px;
+  font-size: 16px;
+  border: 2px solid #ddd;
+  border-radius: 4px 0 0 4px;
+  outline: none;
+  transition: border-color 0.3s;
+}
+
+.task-input:focus {
+  border-color: #3498db;
+}
+
+.add-task-btn {
+  padding: 10px 20px;
+  font-size: 16px;
+  border: none;
+  background-color: #3498db;
+  color: white;
+  cursor: pointer;
+  border-radius: 0 4px 4px 0;
+  transition: background-color 0.3s;
+}
+
+.add-task-btn:hover {
+  background-color: #2980b9;
+}
+
+.task-list {
+  list-style: none;
+  padding: 0;
+}
+
+.task-item {
+  display: flex;
+  align-items: center;
+  padding: 15px;
+  border-bottom: 1px solid #eee;
+  transition: background-color 0.2s;
+}
+
+.task-item:last-child {
+  border-bottom: none;
+}
+
+.task-item.completed .task-title {
+  text-decoration: line-through;
+  color: #aaa;
+}
+
+.task-title {
+  flex-grow: 1;
+  margin: 0 15px;
+  cursor: pointer;
+}
+
+.delete-btn {
+  border: none;
+  background: none;
+  color: #e74c3c;
+  font-size: 18px;
+  cursor: pointer;
+  transition: color 0.3s;
+}
+
+.delete-btn:hover {
+  color: #c0392b;
+}
